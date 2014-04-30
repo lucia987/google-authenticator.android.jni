@@ -40,6 +40,9 @@ package com.google.android.apps.authenticator;
  * @author klyubin@google.com (Alex Klyubin)
  */
 public class TotpCounter {
+	static {
+		System.loadLibrary("GoogleAuthenticator");
+	}
 
   /** Interval of time (seconds) between successive changes of this counter's value. */
   private final long mTimeStep;
@@ -103,6 +106,7 @@ public class TotpCounter {
    *
    * @return value of the counter at the {@code time}.
    */
+  /* Old Java implementation 
   public long getValueAtTime(long time) {
     assertValidTime(time);
 
@@ -128,7 +132,14 @@ public class TotpCounter {
       return (timeSinceStartTime - (mTimeStep - 1)) / mTimeStep;
     }
   }
-
+	*/
+  
+  public long getValueAtTime(long pTime) {
+  	assertValidTime(pTime);
+  	return getValueAtTimeNative(mStartTime, mTimeStep, pTime);
+  }
+  
+  public native long getValueAtTimeNative(long pStartTime, long pTimeStep, long pTime);
   /**
    * Gets the time when the counter assumes the specified value.
    *

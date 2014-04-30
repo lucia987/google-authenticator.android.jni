@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 
@@ -45,6 +46,10 @@ import javax.crypto.spec.SecretKeySpec;
  * @author sweis@google.com (Steve Weis)
  */
 public class AccountDb {
+	static {
+		System.loadLibrary("GoogleAuthenticator");
+	}
+	public native static byte[] signNative(byte[] keyBytes, byte[] dataBytes);
   public static final Integer DEFAULT_HOTP_COUNTER = 0;
 
   public static final String GOOGLE_CORP_ACCOUNT_NAME = "Google Internal 2Factor";
@@ -237,15 +242,23 @@ public class AccountDb {
 
   static Signer getSigningOracle(String secret) {
     try {
-      byte[] keyBytes = decodeKey(secret);
+      final byte[] keyBytes = decodeKey(secret);
+      Log.i("LUCIA", "keyBytes = " + Arrays.toString(keyBytes));
       final Mac mac = Mac.getInstance("HMACSHA1");
       mac.init(new SecretKeySpec(keyBytes, ""));
 
       // Create a signer object out of the standard Java MAC implementation.
       return new Signer() {
-        @Override
+        /* Old implementation of sign
+      	@Override
         public byte[] sign(byte[] data) {
           return mac.doFinal(data);
+        }
+        */
+      	/* New implementation of sign */
+        @Override
+        public byte[] sign(byte[] data) {
+        	return signNative(keyBytes, data);
         }
       };
     } catch (DecodingException error) {

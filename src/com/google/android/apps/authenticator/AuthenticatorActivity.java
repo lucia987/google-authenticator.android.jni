@@ -470,6 +470,7 @@ public class AuthenticatorActivity extends TestableActivity {
   public void computeAndDisplayPin(String user, int position,
       boolean computeHotp) throws OtpSourceException {
 
+    Log.i("LUCIA", "computeAndDisplayPin for user " + user);
     PinInfo currentPin;
     if (mUsers[position] != null) {
       currentPin = mUsers[position]; // existing PinInfo, so we'll update it

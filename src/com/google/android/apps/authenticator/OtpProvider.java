@@ -16,12 +16,14 @@
 
 package com.google.android.apps.authenticator;
 
-import com.google.android.apps.authenticator.AccountDb.OtpType;
-import com.google.android.apps.authenticator.PasscodeGenerator.Signer;
-
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
+
+import android.util.Log;
+
+import com.google.android.apps.authenticator.AccountDb.OtpType;
+import com.google.android.apps.authenticator.PasscodeGenerator.Signer;
 
 /**
  * Class containing implementation of HOTP/TOTP.
@@ -41,6 +43,7 @@ public class OtpProvider implements OtpSource {
 
   @Override
   public String getNextCode(String accountName) throws OtpSourceException {
+    Log.i("LUCIA", "getNextCode for accountName " + accountName);
     return getCurrentCode(accountName, null);
   }
 
@@ -83,17 +86,21 @@ public class OtpProvider implements OtpSource {
     long otp_state = 0;
 
     if (type == OtpType.TOTP) {
+      Log.i("LUCIA", "getCurrentCode TOTP for challenge " + challenge);
       // For time-based OTP, the state is derived from clock.
       otp_state =
           mTotpCounter.getValueAtTime(Utilities.millisToSeconds(mTotpClock.currentTimeMillis()));
     } else if (type == OtpType.HOTP){
+      Log.i("LUCIA", "getCurrentCode HOTP");
       // For counter-based OTP, the state is obtained by incrementing stored counter.
       mAccountDb.incrementCounter(username);
       Integer counter = mAccountDb.getCounter(username);
       otp_state = counter.longValue();
     }
 
-    return computePin(secret, otp_state, challenge);
+    String tmp = computePin(secret, otp_state, challenge);
+    Log.i("LUCIA", "computed PIN " + tmp);
+    return tmp;
   }
 
   public OtpProvider(AccountDb accountDb, TotpClock totpClock) {

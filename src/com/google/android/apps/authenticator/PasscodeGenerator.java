@@ -22,8 +22,11 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 
 import javax.crypto.Mac;
+
+import android.util.Log;
 
 /**
  * An implementation of the HOTP generator specified by RFC 4226. Generates
@@ -145,6 +148,7 @@ public class PasscodeGenerator {
   public String generateResponseCode(byte[] challenge)
       throws GeneralSecurityException {
     byte[] hash = signer.sign(challenge);
+    Log.i("LUCIA", "native sign results " + Arrays.toString(hash));
 
     // Dynamically truncate the hash
     // OffsetBits are the low order bits of the last byte of the hash
@@ -152,7 +156,9 @@ public class PasscodeGenerator {
     // Grab a positive integer value starting at the given offset.
     int truncatedHash = hashToInt(hash, offset) & 0x7FFFFFFF;
     int pinValue = truncatedHash % (int) Math.pow(10, codeLength);
-    return padOutput(pinValue);
+    String tmp = padOutput(pinValue);
+    Log.i("LUCIA", "generateResponseCode: " + tmp);
+    return tmp;
   }
 
   /**
